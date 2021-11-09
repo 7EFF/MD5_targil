@@ -14,14 +14,17 @@ server_socket.listen()
 print("Listening for clients...")
 client_sockets = []
 
-def send_to(thread,socket):
+
+def send_to(thread, socket):
     thread.acquire()
     socket.send(thread.encode())
     thread.lock()
 
+
 def main():
+    count_client = 0
+    list =[range(0,999999999,1000000)]
     number = input("Enter a number you want to decrypt")
-    count_client=0
     while True:
         rlist, wlist, xlist = select.select([server_socket] + client_sockets, client_sockets, [])
         for current_socket in rlist:
@@ -29,22 +32,19 @@ def main():
                 connection, client_address = current_socket.accept()
                 print("New client joined!", client_address)
                 client_sockets.append(connection)
-                count_client = count_client+1
-                Length = len(number)
-                Length = Length/count_client
+                req=""
+
                 for socket in client_sockets:
-                    message = ""
-                    count=0
-                    for i in number:
-                        message.append(i)
-                        count = count+1
-                        if count ==Length:
-                            socket.send(message)
-                            message = ""
-                            count = 0
-                    #thread = threading.Thread(target=send_to(),args=(1,))
-                    #thread.lock()
-                    #thread.start()
+                    socket.send(number.encode())
+                    req = socket.recv(1024).decode()
+                    print(client_address, " ", req)
+                    if req == "Ready for work":
+                        encryp = socket.recv(1024).decode()
+                        print("the encypted number is: ", encryp)
+                        return
+                    else:
+                        continue
+
 
 
 if __name__ == '__main__':
