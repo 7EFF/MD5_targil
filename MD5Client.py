@@ -1,7 +1,6 @@
 import hashlib
 import socket
 import select
-import time
 
 def Recieve(my_socket):
     rlist, slist, xlist = select.select([my_socket], [], [], 0.1)
