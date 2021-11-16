@@ -1,8 +1,6 @@
 import socket
 import select
-import time
 import threading
-import queue
 
 
 MAX_MSG_LENGTH = 1024
@@ -15,10 +13,9 @@ server_socket.bind((SERVER_IP, SERVER_PORT))
 server_socket.listen()
 print("Listening for clients...")
 client_sockets=[]
-
 def socket_work(socket,number,queue,client_address):
     encryp = "Not found"
-    while encryp =="Not found" and queue.full():
+    while encryp =="Not found" and len(queue)!=0:
         socket.send(number.encode())
         min = queue.pop(0)
         #print(min)
@@ -27,18 +24,10 @@ def socket_work(socket,number,queue,client_address):
         print(client_address, " ", req)
         if req == "Ready for work":
             encryp = socket.recv(1024).decode()
-            #print(encryp)
             if encryp != "Not found":
                 print("the encypted number is: ", encryp)
                 queue.clear()
-                return
-
-
-
-def send_to(thread, socket):
-    thread.acquire()
-    socket.send(thread.encode())
-    thread.lock()
+    return
 
 
 def main():
@@ -58,6 +47,7 @@ def main():
                     #socket_work(socket, number, queue, client_address)
                 x = threading.Thread(target=socket_work, args=(connection,number,queue,client_address))
                 x.start()
+                #return
 
 
 if __name__ == '__main__':
