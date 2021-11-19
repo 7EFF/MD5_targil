@@ -27,7 +27,7 @@ class server:
             min = self.queue.pop(0)
             self.socket.send(str(min).encode())
             req = self.socket.recv(1024).decode()
-            print(self.client_address, " ", req)
+            print("sent to ",self.client_address,"-->",min)
             if req == "Ready for work":
                 encryp = self.socket.recv(1024).decode()
                 if encryp != "Not found":
@@ -47,13 +47,15 @@ def main():
         for current_socket in rlist:
             if current_socket is server_socket:
                 connection, client_address = current_socket.accept()
+                time.sleep(0.1)
                 print("New client joined!", client_address)
+                time.sleep(0.1)
                 client_sockets.append(connection)
                 user = server(connection,number,queue,client_address)
                 x = threading.Thread(target=user.socket_work)
                 x.start()
+                time.sleep(0.1)
 
 
 if __name__ == '__main__':
     main()
-
