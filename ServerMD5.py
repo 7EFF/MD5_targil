@@ -1,7 +1,7 @@
 import socket
 import select
 import threading
-
+import time
 
 MAX_MSG_LENGTH = 1024
 SERVER_PORT = 5555
@@ -13,21 +13,27 @@ server_socket.bind((SERVER_IP, SERVER_PORT))
 server_socket.listen()
 print("Listening for clients...")
 client_sockets=[]
-def socket_work(socket,number,queue,client_address):
-    encryp = "Not found"
-    while encryp =="Not found" and len(queue)!=0:
-        socket.send(number.encode())
-        min = queue.pop(0)
-        #print(min)
-        socket.send(str(min).encode())
-        req = socket.recv(1024).decode()
-        print(client_address, " ", req)
-        if req == "Ready for work":
-            encryp = socket.recv(1024).decode()
-            if encryp != "Not found":
-                print("the encypted number is: ", encryp)
-                queue.clear()
-    return
+class server:
+    def __init__(self,socket,number,queue,client_address):
+        self.socket=socket
+        self.number=number
+        self.queue=queue
+        self.client_address=client_address
+
+    def socket_work(self):
+        encryp = "Not found"
+        while encryp =="Not found" and len(self.queue)!=0:
+            self.socket.send(self.number.encode())
+            min = self.queue.pop(0)
+            self.socket.send(str(min).encode())
+            req = self.socket.recv(1024).decode()
+            print(self.client_address, " ", req)
+            if req == "Ready for work":
+                encryp = self.socket.recv(1024).decode()
+                if encryp != "Not found":
+                    print("the encypted number is: ", encryp)
+                    self.queue.clear()
+        return
 
 
 def main():
@@ -43,11 +49,9 @@ def main():
                 connection, client_address = current_socket.accept()
                 print("New client joined!", client_address)
                 client_sockets.append(connection)
-                #for socket in client_sockets:
-                    #socket_work(socket, number, queue, client_address)
-                x = threading.Thread(target=socket_work, args=(connection,number,queue,client_address))
+                user = server(connection,number,queue,client_address)
+                x = threading.Thread(target=user.socket_work)
                 x.start()
-                #return
 
 
 if __name__ == '__main__':
